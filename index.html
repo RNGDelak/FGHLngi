@@ -1,37 +1,49 @@
-  <!DOCTYPE html>
-  <html lang="en">
-  <head>
-      <meta charset="UTF-8">
-      <meta name="viewport" content="width=device-width, initial-scale=1.0">
-      <title>Fast Growing Hierachy Lngi</title>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Fast Growing Hierarchy Lngi</title>
 
-      <style>
-          body {
-              background-color: black;
-              color: #00ffff;
-          }
+<style>
+    body {
+        background-color: black;
+        color: #00ffff;
+        font-family: 'Noto Sans', sans-serif;
+    }
 
-          #output {
-              font-size: 1.5rem;
-              white-space: normal;
-              word-wrap: break-word;
-              position: relative;
-          }
+    #output {
+        font-size: 1.5rem;
+        white-space: normal;
+        word-wrap: break-word;
+        position: relative;
+        font-style: italic;
+    }
 
-        .glow {
-            text-shadow:
-              0 0 4px #00ffff,
-              0 0 10px #00ffff,
-              0 0 20px #00aaff,
-              0 0 40px #00aaff,
-              0 0 80px #00aaff
-        }
+    .glow {
+        text-shadow:
+            0 0 4px #00ffff,
+            0 0 10px #00ffff,
+            0 0 20px #00aaff,
+            0 0 40px #00aaff,
+            0 0 80px #00aaff;
+    }
 
-    
-      </style>
-      <script>
+    input, button {
+        background: black;
+        color: #00ffff;
+        border: 1px solid #00ffff;
+        padding: 4px 8px;
+        font-size: 1rem;
+    }
 
-      // Final boss-level numberToCanonicalFGH -> HTML-only output (Option A)
+    button {
+        cursor: pointer;
+    }
+</style>
+
+<script>
+    // Final boss-level numberToCanonicalFGH -> HTML-only output (Option A)
       function numberToCanonicalFGH(nInput, baseInput, options = {}) {
         const n = BigInt(nInput);
         const base = BigInt(baseInput);
@@ -254,87 +266,108 @@
 
 
 
+    
+document.addEventListener("DOMContentLoaded", () => {
 
+    // ----- increment slider -----
+    const slider = document.getElementById("incrementSlider");
+    const valueLabel = document.getElementById("incrementValue");
 
-      // ----------------- Example tests -----------------
-      document.addEventListener("DOMContentLoaded", () => {
-          const slider = document.getElementById("incrementSlider");
-          const valueLabel = document.getElementById("incrementValue");
+    function sliderToValue(v) {
+        return Math.pow(10, v);
+    }
 
-          function sliderToValue(v) {
-              return Math.pow(10, v);
-          }
+    function updateIncrement() {
+        window.increment = sliderToValue(parseFloat(slider.value));
+        valueLabel.textContent = window.increment.toPrecision(3);
+    }
 
-          function updateIncrement() {
-              const increment = sliderToValue(parseFloat(slider.value));
-              valueLabel.textContent = increment.toPrecision(3);
-              window.increment = increment;
-          }
+    slider.addEventListener("input", updateIncrement);
+    updateIncrement();
 
-          slider.addEventListener("input", updateIncrement);
-          updateIncrement(); // default = 1
-      });
+    // ----- base selector -----
+    let base = 2n;
+    const baseInput = document.getElementById("baseInput");
+    const basePlus = document.getElementById("basePlus");
+    const baseMinus = document.getElementById("baseMinus");
 
+    function updateBase(v) {
+        v = Math.max(2, v | 0);
+        baseInput.value = v;
+        base = BigInt(v);
+        updateOutput();
+    }
 
+    baseInput.addEventListener("input", () =>
+        updateBase(parseInt(baseInput.value, 10) || 2)
+    );
 
+    basePlus.addEventListener("click", () =>
+        updateBase(parseInt(baseInput.value, 10) + 1)
+    );
 
-      document.addEventListener("DOMContentLoaded", () => {
+    baseMinus.addEventListener("click", () =>
+        updateBase(parseInt(baseInput.value, 10) - 1)
+    );
 
-          let i = 2;
-          let lastInt = Math.floor(i);
+    // ----- main loop -----
+    let i = 2;
+    let lastInt = 1;
 
-          const output = document.getElementById("output");
+    const output = document.getElementById("output");
 
-          function setOutputText(text) {
-              output.innerHTML = text;
-          }
+    function updateOutput() {
+        output.innerHTML =
+            numberToCanonicalFGH(BigInt(Math.floor(i)), base);
+    }
 
-          setInterval(() => {
-              document.getElementById("i").innerHTML =
-                  "i = " + Math.round(i * 1000) / 1000;
+    setInterval(() => {
+        document.getElementById("i").textContent =
+            "i = " + Math.round(i * 1000) / 1000;
 
-              const currentInt = Math.floor(i);
+        const cur = Math.floor(i);
+        if (cur !== lastInt) {
+            lastInt = cur;
+            updateOutput();
+        }
+        i += window.increment;
+    }, 0);
+});
+</script>
+</head>
 
-              if (currentInt > lastInt) {
-                  // Heavy function runs ONLY when i increases by 1
-                  setOutputText(
-                      numberToCanonicalFGH(BigInt(currentInt), 2n)
-                  );
-                  lastInt = currentInt;
-              }
+<body>
+<h1>Fast Growing Hierarchy Lngi</h1>
 
-              i += window.increment;
+<label>
+    Increment:
+    <span id="incrementValue">1</span>
+</label><br>
 
-          }, 0);
-      });
+<input
+    type="range"
+    id="incrementSlider"
+    style="width: 50%;"
+    min="-4"
+    max="1.176091"
+    step="0.01"
+    value="-4"
+>
 
+<!-- Base selector (between slider and iteration count) -->
+<div style="margin: 12px 0;">
+    <label>Base :</label>
+           <input id="baseInput" type="number" min="2" value="2" style="width:70px;text-align:center;">
+    <button id="baseMinus">−</button>
+    
+    <button id="basePlus">+</button>
+</div>
 
+<h3 id="i" class="glow">i = 0</h3>
 
+  <p id="output" class = "glow" style="font-style: italic; font-family: 'Noto Sans';font-size: 1.5rem;">
+      f0(0)
+  f<sub>0</sub>(0)</p>
 
-
-      </script>
-  </head>
-  <body>
-      <h1>Fast Growing Hierachy Lngi</h1>
-      <label for="incrementSlider">
-          Increment:
-          <span id="incrementValue">1</span>
-      </label>
-  <br>
-      <input
-          type="range"
-          id="incrementSlider"
-          style="width: 50%;"
-          min="-4"
-          max="1.176091"
-          step="0.01"
-          value="-4"
-      >
-
-      <h3 id="i" class = "glow">i = 0</h3>
-
-      <p id="output" class = "glow" style="font-style: italic; font-family: 'Noto Sans';font-size: 1.5rem;">
-          f0(0)
-      </p>
-  </body>
-  </html>
+</body>
+</html>
